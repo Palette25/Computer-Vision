@@ -3,6 +3,7 @@
 */
 
 #include "A4_Edge_detector.h"
+#include "CANNY.h"
 
 int main(int argc, char* argv[]){
 	if(argc < 3){

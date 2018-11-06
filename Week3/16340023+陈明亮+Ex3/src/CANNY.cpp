@@ -37,30 +37,13 @@ CImg<unsigned char> CANNY::toGrayScale(CImg<unsigned char> src) {
 	return gray;
 }
 
-/*
-  Canny edge detection with default parameters
-    Params: grey - the greyscale image
-	        width, height - image width and height
-    Returns: binary image with edges as set pixels
-*/
+
 unsigned char* CANNY::canny(unsigned char *grey, int width, int height, float lowthreshold, float highthreshold, float gaussiankernelradius, int gaussiankernelwidth)
 {
 	cannyparam(grey, width, height, lowthreshold, highthreshold, gaussiankernelradius, gaussiankernelwidth, 0);
 	return result;
 }
 
-/*
- Canny edge detection with parameters passed in by user
-   Params: grey - the greyscale image
-           width, height - image dimensions
-		   lowthreshold - default 2.5
-		   highthreshold - default 7.5
-		   gaussiankernelradius - radius of edge detection Gaussian, in standard deviations
-		     (default 2.0)
-		   gaussiankernelwidth - width of Gaussian kernel, in pixels (default 16)
-		   contrastnormalised - flag to normalise image before edge detection (defualt 0)
-   Returns: binary image with set pixels as edges
-*/
 void CANNY::cannyparam(unsigned char *grey, int width, int height,
 						  float lowthreshold, float highthreshold, 
 						  float gaussiankernelradius, int gaussiankernelwidth,  
@@ -93,43 +76,6 @@ error_exit:
 }
 
 
-/*
-  buffer allocation
-*/
-CANNY* CANNY::allocatebuffers(unsigned char *grey, int width, int height)
-{
-	if(!this)  
-		goto error_exit;
-	result = (unsigned char*)malloc(width * height);
-	middleChar = (unsigned char*)malloc(width * height);
-	middleInt = (int *)malloc(width * height * sizeof(int));
-	middleFloat = (float*)malloc(width * height* sizeof(float));
-
-	data = (unsigned char *)malloc(width * height);
-	idata = (int *)malloc(width * height * sizeof(int));
-	magnitude = (int *)malloc(width * height * sizeof(int));
-	xConv = (float *)malloc(width * height * sizeof(float));
-	yConv = (float *)malloc(width * height * sizeof(float));
-	xGradient = (float *)malloc(width * height * sizeof(float));
-	yGradient = (float *)malloc(width * height * sizeof(float));
-	if(!data || !idata || !magnitude 
-		|| !xConv || !yConv 
-		|| !xGradient || !yGradient)
-		 goto error_exit;
-
-	memcpy(data, grey, width * height);
-	this->width = width;
-	this->height = height;
-
-	return this;
-error_exit:
-	killbuffers();
-	return 0;
-}
-
-/*
-  buffers destructor
-*/
 void CANNY::killbuffers()
 {
 	if(this)
@@ -144,17 +90,6 @@ void CANNY::killbuffers()
 	}
 }
 
-/* NOTE: The elements of the method below (specifically the technique for
-	non-maximal suppression and the technique for gradient computation)
-	are derived from an implementation posted in the following forum (with the
-	clear intent of others using the code):
-	  http://forum.java.sun.com/thread.jspa?threadID=546211&start=45&tstart=0
-	My code effectively mimics the algorithm exhibited above.
-	Since I don't know the providence of the code that was posted it is a
-	possibility (though I think a very remote one) that this code violates
-	someone's intellectual property rights. If this concerns you feel free to
-	contact me for an alternative, though less efficient, implementation.
-	*/
 	
 int CANNY::computeGradients(float kernelRadius, int kernelWidth)
 {	
@@ -251,11 +186,7 @@ int CANNY::computeGradients(float kernelRadius, int kernelWidth)
 				yGradient[index] = sum;
 			}
 		}
-		//for (int index = 0; index<width*height; index++) //梯度模图像
-		//	middleFloat[index] = xGradient[index] + yGradient[index];
-		//	middleFloat[index] = yGradient[index];  
-		//	middleFloat[index] = hypotenuse(can->xGradient[index], can->yGradient[index]); // 不对 
- 
+		
 		initX = kwidth;
 		maxX = width - kwidth;
 		initY = width * kwidth;
@@ -288,34 +219,7 @@ int CANNY::computeGradients(float kernelRadius, int kernelWidth)
 				float swMag = hypotenuse(xGradient[indexSW], yGradient[indexSW]);
 				float nwMag = hypotenuse(xGradient[indexNW], yGradient[indexNW]);
 				float tmp;
-				/*
-				 * An explanation of what's happening here, for those who want
-				 * to understand the source: This performs the "non-maximal
-				 * supression" phase of the Canny edge detection in which we
-				 * need to compare the gradient magnitude to that in the
-				 * direction of the gradient; only if the value is a local
-				 * maximum do we consider the point as an edge candidate.
-				 * 
-				 * We need to break the comparison into a number of different
-				 * cases depending on the gradient direction so that the
-				 * appropriate values can be used. To avoid computing the
-				 * gradient direction, we use two simple comparisons: first we
-				 * check that the partial derivatives have the same sign (1)
-				 * and then we check which is larger (2). As a consequence, we
-				 * have reduced the problem to one of four identical cases that
-				 * each test the central gradient magnitude against the values at
-				 * two points with 'identical support'; what this means is that
-				 * the geometry required to accurately interpolate the magnitude
-				 * of gradient function at those points has an identical
-				 * geometry (upto right-angled-rotation/reflection).
-				 * 
-				 * When comparing the central gradient to the two interpolated
-				 * values, we avoid performing any divisions by multiplying both
-				 * sides of each inequality by the greater of the two partial
-				 * derivatives. The common comparand is stored in a temporary
-				 * variable (3) and reused in the mirror case (4).
-				 * 
-				 */
+			
 				flag = ( (xGrad * yGrad <= 0.0f) /*(1)*/
 					? ffabs(xGrad) >= ffabs(yGrad) /*(2)*/
 						? (tmp = ffabs(xGrad * gradMag)) >= ffabs(yGrad * neMag - (xGrad + yGrad) * eMag) /*(3)*/
@@ -331,9 +235,7 @@ int CANNY::computeGradients(float kernelRadius, int kernelWidth)
                 if(flag)
 				{
 					magnitude[index] = (gradMag >= MAGNITUDE_LIMIT) ? MAGNITUDE_MAX : (int) (MAGNITUDE_SCALE * gradMag);
-					/*NOTE: The orientation of the edge is not employed by this
-					 implementation. It is a simple matter to compute it at
-					this point as: Math.atan2(yGrad, xGrad); */
+					
 				} 
 				else 
 				{
@@ -352,11 +254,38 @@ error_exit:
 		free(diffKernel);
 		return -1;
 }
-	
-	/*
-	  we follow edges. high gives the parameter for starting an edge,
-	  how the parameter for continuing it.
-	*/
+
+CANNY* CANNY::allocatebuffers(unsigned char *grey, int width, int height)
+{
+	if(!this)  
+		goto error_exit;
+	result = (unsigned char*)malloc(width * height);
+	middleChar = (unsigned char*)malloc(width * height);
+	middleInt = (int *)malloc(width * height * sizeof(int));
+	middleFloat = (float*)malloc(width * height* sizeof(float));
+
+	data = (unsigned char *)malloc(width * height);
+	idata = (int *)malloc(width * height * sizeof(int));
+	magnitude = (int *)malloc(width * height * sizeof(int));
+	xConv = (float *)malloc(width * height * sizeof(float));
+	yConv = (float *)malloc(width * height * sizeof(float));
+	xGradient = (float *)malloc(width * height * sizeof(float));
+	yGradient = (float *)malloc(width * height * sizeof(float));
+	if(!data || !idata || !magnitude 
+		|| !xConv || !yConv 
+		|| !xGradient || !yGradient)
+		 goto error_exit;
+
+	memcpy(data, grey, width * height);
+	this->width = width;
+	this->height = height;
+
+	return this;
+error_exit:
+	killbuffers();
+	return 0;
+}
+
 void CANNY::performHysteresis(int low, int high)
 {
   int offset = 0;
@@ -375,9 +304,7 @@ void CANNY::performHysteresis(int low, int high)
   }
 }
  
-/*
-	recursive portion of edge follower 
-*/
+
 void CANNY::follow(int x1, int y1, int i1, int threshold)
 {
   int x, y;

@@ -48,7 +48,6 @@ void Edge_detector::Init_hough_space(){
 	int max_votes = 0, radius_gap = 2;
 	// Begin from min accepting radius, increase with r_gap, finding circles in condition
 	for(int i=min_radius; i<max_radius; i+=radius_gap){
-		cout << i << endl;
 		max_votes = 0;
 		hough_space = CImg<float>(width, height, 1, 1, 0);
 		hough_space.fill(0);
@@ -84,7 +83,6 @@ void Edge_detector::Hough_circle_transform(){
 	circleNumber = 0;
 	sort(votes.begin(), votes.end(), comp);
 	for(int i=0; i<votes.size(); i++){
-		cout << votes[i].first << ' ' << votes[i].second << endl;
 		if(votes[i].first >= votes_threshold)
 			++circleNumber;
 	}
@@ -131,8 +129,7 @@ void Edge_detector::draw_circle(int radius){
 		vector<int>::iterator it = find(final_center_votes.begin(), final_center_votes.end(), currVotes);
 		int indexOfCurr =  it - final_center_votes.begin();
 		int xOfCenter = centers[indexOfCurr].first, yOfCenter = centers[indexOfCurr].second;
-		cout << xOfCenter << ' ' << yOfCenter << ' ' << radius << endl;
-
+		
 		if(xOfCenter+radius>=width || xOfCenter-radius<0 || yOfCenter+radius>=height || yOfCenter-radius<0){
 			decreaseCount++;
 			break;
@@ -146,9 +143,10 @@ void Edge_detector::draw_circle(int radius){
 		}
 		if(j == result.size()){
 			result.push_back(make_pair(xOfCenter, yOfCenter));
-			input.draw_circle(xOfCenter, yOfCenter, radius, blue, 5.0f, 1);
+			for(int i=0; i<3; i++)
+				input.draw_circle(xOfCenter, yOfCenter, radius+i, blue, 5.0f, 1);
 			// Draw center of the circle
-			input.draw_circle(xOfCenter, yOfCenter, 5, red);
+			input.draw_circle(xOfCenter, yOfCenter, 6, red);
 			cout << "(x, y): (" << xOfCenter << ", " << yOfCenter << "), radius = " << radius << endl;
 			break;
 		}

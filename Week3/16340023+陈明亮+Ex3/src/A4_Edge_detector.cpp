@@ -72,7 +72,6 @@ void Edge_detector::Edge_detection(){
 	double red[] = {255, 0, 0};
 	//RGB_to_gray();
 	gaussian_img = input.get_blur(sigma);  // Use CImg lib method -- get_blur()
-	gaussian_img.display();
 	Init_hough_space();  // Init hough space
 	find_peaks();  // Find most votes peaks with hough space
 	draw_lines(blue);  // Draw lines in vector Lines
