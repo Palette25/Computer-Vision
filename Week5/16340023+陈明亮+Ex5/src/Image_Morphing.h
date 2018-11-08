@@ -24,12 +24,8 @@ struct Point {
 
 struct Triangle {
 	Point p1, p2, p3;
-	Triangle(Point a, Point b, Point c) {
-		p1 = a;
-		p2 = b;
-		p3 = c;
-	}
-}
+	Triangle(Point a, Point b, Point c) : p1(a), p2(b), p3(c) {}
+};
 
 struct Three_pair {
 	int x, y ,z;
@@ -38,7 +34,7 @@ struct Three_pair {
 		y = y_;
 		z = z_;
 	}
-}
+};
 
 class Image_Morpher {
 public:
@@ -47,15 +43,16 @@ public:
 	void initPoints();
 	void initTriangles();
 	void saveFrames();
+	void drawStructedImg();
 	bool isInTriangle(Point po, Triangle tr); // Judge whether a point is in the triangle
-	CImg<unsigned char> getTransformMatrix(Triangle tr1, Triangle tr2); // Get transform matrix
+	CImg<float> getTransformMatrix(Triangle tr1, Triangle tr2); // Get transform matrix
 
 private:
 	int frameNum;
 	// Images
-	CImg<unsigned char> srcImg;
-	CImg<unsigned char> destImg;
-	CImgList<unsigned char> frameImgList;
+	CImg<float> srcImg;
+	CImg<float> destImg;
+	CImgList<float> frameImgList;
 	// Face Points of images
 	vector<Point> srcPoints;
 	vector<Point> destPoints;
