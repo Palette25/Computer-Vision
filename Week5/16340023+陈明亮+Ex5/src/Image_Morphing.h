@@ -10,6 +10,7 @@
 #include <sstream>
 #include <vector>
 #include "CImg.h"
+#include "Delaunay.h"
 
 using namespace std;
 using namespace cimg_library;
@@ -61,6 +62,7 @@ private:
 	vector<Triangle> srcTriangles;
 	vector<Triangle> destTriangles;
 	vector<vector<Triangle> > midFrameTriangles;
+	vector<Delaunay> midFrameMesh;
 };
 
 #endif

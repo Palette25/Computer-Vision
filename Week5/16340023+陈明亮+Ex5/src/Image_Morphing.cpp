@@ -4,6 +4,7 @@
 
 #include "Image_Morphing.h"
 
+
 Image_Morpher::Image_Morpher(int frameNum){
 	this->srcImg = CImg<float>("../testData/1.bmp");
 	this->srcImg.resize(324, 400);
@@ -17,22 +18,26 @@ void Image_Morpher::Morphing(){
 	initPoints();
 	initTriangles();
 	// Generate frames
-	int len = midFrameTriangles[0].size();
 	// Push first frame
 	frameImgList.push_back(srcImg);
 
 	for(int i=0; i<frameNum; i++){
 		CImg<float> mid(destImg.width(), destImg.height(), 1, 3, 1);
+		CImg<float> tmp(1, 3, 1, 1, 1);
+		CImg<float> trans0(1, 3, 1, 1, 1), trans1(1, 3, 1, 1, 1);
 		cimg_forXY(mid, x, y){
-			CImg<float> tmp(1, 3, 1, 1, 1);
-			CImg<float> trans0(1, 3, 1, 1, 1), trans1(1, 3, 1, 1, 1);
-			for(int j=0; j<len; j++){
-				if(isInTriangle(Point(x, y), midFrameTriangles[i][j])){
+			Delaunay tempMesh = midFrameMesh[i];
+			for(int j=0; j<tempMesh.m_Tris.size(); j++){
+				int* v = tempMesh.m_Tris[j].v;
+				Triangle midTri = Triangle(midFramePoints[i][v[0]], midFramePoints[i][v[1]], midFramePoints[i][v[2]]);
+				if(isInTriangle(Point(x, y), midTri)){
 					tmp(0, 0) = x;  tmp(0, 1) = y;
 					// Transform to source image
-					trans0 = (getTransformMatrix(midFrameTriangles[i][j], srcTriangles[j])) * tmp;
+					Triangle srcTri = Triangle(srcPoints[v[0]], srcPoints[v[1]], srcPoints[v[2]]), 
+								destTri = Triangle(destPoints[v[0]], destPoints[v[1]], destPoints[v[2]]);
+					trans0 = (getTransformMatrix(midTri, srcTri)) * tmp;
 					// Transform to dest image
-					trans1 = (getTransformMatrix(midFrameTriangles[i][j], destTriangles[j])) * tmp;
+					trans1 = (getTransformMatrix(midTri, destTri)) * tmp;
 					// Combinition
 					float rate = (float)i / (frameNum-1);
 					//cout << trans0(0, 0) << ' ' << trans0(0, 1) << ' ' << trans1(0, 0) << ' ' << trans1(0, 1) << endl;
@@ -52,6 +57,11 @@ void Image_Morpher::Morphing(){
 }
 
 void Image_Morpher::initPoints(){
+	Point p0(0, 0), p1(srcImg.width()-1, 0);
+	Point p2(srcImg.width()-1, srcImg.height()-1), p3(0, srcImg.height()-1);
+
+	srcPoints.push_back(p0); srcPoints.push_back(p1);
+	srcPoints.push_back(p2); srcPoints.push_back(p3);
 	// Init source image points
 	string tempStr;
 	int x_, y_;
@@ -68,6 +78,8 @@ void Image_Morpher::initPoints(){
 		exit(1);
 	}
 
+	destPoints.push_back(p0); destPoints.push_back(p1);
+	destPoints.push_back(p2); destPoints.push_back(p3);
 	// Init dest image points
 	ifstream destPoints_file;
 	destPoints_file.open("../facePoints/dest_points.txt");
@@ -96,19 +108,46 @@ void Image_Morpher::initPoints(){
 }
 
 void Image_Morpher::initTriangles(){
+	point p0(0, 0, 0), p1(srcImg.width()-1, 0, 0);
+	point p2(srcImg.width()-1, srcImg.height()-1, 0), p3(0, srcImg.height()-1, 0);
+
 	string tempStr;
 	int x_, y_, z_;
 	// Init triangle lines
-	for(int i=0; i<srcPoints.size(); i+=3)
-		this->srcTriangles.push_back(Triangle(srcPoints[i], srcPoints[i+1], srcPoints[i+2]));
-	for(int i=0; i<destPoints.size(); i+=3)
-		this->destTriangles.push_back(Triangle(destPoints[i], destPoints[i+1], destPoints[i+2]));
+	Delaunay srcMesh(p0, p1, p2, p3);
+	for(int i=4; i<srcPoints.size(); i++){
+		srcMesh.AddPoint(srcPoints[i].x, srcPoints[i].y, 0);
+	}
+	// Droping triangles
+	for(int i=0; i<srcMesh.m_Tris.size(); i++){
+		triangle temp = srcMesh.m_Tris[i];
+		point p0 = srcMesh.m_Pts[temp.v[0]], p1 = srcMesh.m_Pts[temp.v[1]], p2 = srcMesh.m_Pts[temp.v[2]];
+		srcTriangles.push_back(Triangle(Point(p0.x, p0.y), Point(p1.x, p1.y), Point(p2.x, p2.y)));
+	}
+	Delaunay destMesh(p0, p1, p2, p3);
+	for(int i=4; i<destPoints.size(); i++){
+		destMesh.AddPoint(destPoints[i].x, destPoints[i].y, 0);
+	}
+	// Droping triangles
+	for(int i=0; i<destMesh.m_Tris.size(); i++){
+		triangle temp = destMesh.m_Tris[i];
+		point p0 = destMesh.m_Pts[temp.v[0]], p1 = destMesh.m_Pts[temp.v[1]], p2 = destMesh.m_Pts[temp.v[2]];
+		destTriangles.push_back(Triangle(Point(p0.x, p0.y), Point(p1.x, p1.y), Point(p2.x, p2.y)));
+	}
 
 	// Init middle frames triangles
 	for(int i=0; i<frameNum; i++){
 		vector<Triangle> midTemp;
-		for(int j=0; j<midFramePoints.size(); j+=3){
-			midTemp.push_back(Triangle(midFramePoints[i][j], midFramePoints[i][j+1], midFramePoints[i][j+2]));
+		Delaunay midMesh(p0, p1, p2, p3);
+		for(int j=4; j<midFramePoints[i].size(); j++){
+			midMesh.AddPoint(midFramePoints[i][j].x, midFramePoints[i][j].y, 0);
+		}
+		midFrameMesh.push_back(midMesh);
+		// Droping triangles
+		for(int j=0; j<midMesh.m_Tris.size(); j++){
+			triangle temp = midMesh.m_Tris[j];
+			point p0 = midMesh.m_Pts[temp.v[0]], p1 = midMesh.m_Pts[temp.v[1]], p2 = midMesh.m_Pts[temp.v[2]];
+			midTemp.push_back(Triangle(Point(p0.x, p0.y), Point(p1.x, p1.y), Point(p2.x, p2.y)));
 		}
 		midFrameTriangles.push_back(midTemp);
 	}
@@ -121,6 +160,31 @@ void Image_Morpher::saveFrames(){
 		string res_name = dir_name + file_name;
 		frameImgList[i].save_bmp(res_name.c_str());
 	}
+}
+
+
+void Image_Morpher::drawStructedImg(){
+	unsigned char white[3] = {255, 255, 255};
+	for(int i=0; i<srcPoints.size(); i++){
+		srcImg.draw_circle(srcPoints[i].x, srcPoints[i].y, 2, white);
+	}
+	srcImg.save("../frameImg/src.bmp");
+	for(int i=0; i<destPoints.size(); i++){
+		destImg.draw_circle(destPoints[i].x, destPoints[i].y, 2, white);
+	}
+	destImg.save("../frameImg/dest.bmp");
+	for(int i=0; i<srcTriangles.size(); i++){
+		srcImg.draw_line(srcTriangles[i].p1.x, srcTriangles[i].p1.y, srcTriangles[i].p2.x, srcTriangles[i].p2.y, white);
+		srcImg.draw_line(srcTriangles[i].p1.x, srcTriangles[i].p1.y, srcTriangles[i].p3.x, srcTriangles[i].p3.y, white);
+		srcImg.draw_line(srcTriangles[i].p3.x, srcTriangles[i].p3.y, srcTriangles[i].p2.x, srcTriangles[i].p2.y, white);
+	}
+	srcImg.save("../frameImg/srcTriangle.bmp");
+	for(int i=0; i<destTriangles.size(); i++){
+		destImg.draw_line(destTriangles[i].p1.x, destTriangles[i].p1.y, destTriangles[i].p2.x, destTriangles[i].p2.y, white);
+		destImg.draw_line(destTriangles[i].p1.x, destTriangles[i].p1.y, destTriangles[i].p3.x, destTriangles[i].p3.y, white);
+		destImg.draw_line(destTriangles[i].p3.x, destTriangles[i].p3.y, destTriangles[i].p2.x, destTriangles[i].p2.y, white);
+	}
+	destImg.save("../frameImg/destTriangle.bmp");
 }
 
 // Judge whether a point is in the triangle, using core-methods
@@ -167,28 +231,4 @@ CImg<float> Image_Morpher::getTransformMatrix(Triangle tr1, Triangle tr2){
 	}
 	result(2, 2) = 1;
 	return result;
-}
-
-void Image_Morpher::drawStructedImg(){
-	unsigned char white[3] = {255, 255, 255};
-	for(int i=0; i<srcPoints.size(); i++){
-		srcImg.draw_circle(srcPoints[i].x, srcPoints[i].y, 2, white);
-	}
-	srcImg.save("../frameImg/src.bmp");
-	for(int i=0; i<destPoints.size(); i++){
-		destImg.draw_circle(destPoints[i].x, destPoints[i].y, 2, white);
-	}
-	destImg.save("../frameImg/dest.bmp");
-	for(int i=0; i<srcTriangles.size(); i++){
-		srcImg.draw_line(srcTriangles[i].p1.x, srcTriangles[i].p1.y, srcTriangles[i].p2.x, srcTriangles[i].p2.y, white);
-		srcImg.draw_line(srcTriangles[i].p1.x, srcTriangles[i].p1.y, srcTriangles[i].p3.x, srcTriangles[i].p3.y, white);
-		srcImg.draw_line(srcTriangles[i].p3.x, srcTriangles[i].p3.y, srcTriangles[i].p2.x, srcTriangles[i].p2.y, white);
-	}
-	srcImg.save("../frameImg/srcTriangle.bmp");
-	for(int i=0; i<destTriangles.size(); i++){
-		destImg.draw_line(destTriangles[i].p1.x, destTriangles[i].p1.y, destTriangles[i].p2.x, destTriangles[i].p2.y, white);
-		destImg.draw_line(destTriangles[i].p1.x, destTriangles[i].p1.y, destTriangles[i].p3.x, destTriangles[i].p3.y, white);
-		destImg.draw_line(destTriangles[i].p3.x, destTriangles[i].p3.y, destTriangles[i].p2.x, destTriangles[i].p2.y, white);
-	}
-	destImg.save("../frameImg/destTriangle.bmp");
 }
