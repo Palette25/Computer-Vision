@@ -1,0 +1,45 @@
+Determining if the C compiler works failed with the following output:
+Change Dir: E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp
+
+Run Build Command:"E:/mingw/MinGW/bin/mingw32-make.exe" "cmTC_fb16c/fast"
+E:/mingw/MinGW/bin/mingw32-make.exe -f CMakeFiles\cmTC_fb16c.dir\build.make CMakeFiles/cmTC_fb16c.dir/build
+mingw32-make.exe[1]: Entering directory 'E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp'
+process_begin: CreateProcess(NULL, E:\杩呴浄涓嬭浇\bin\cmake.exe -E cmake_echo_color --switch= --progress-dir=E:\Github\Computer_Vision\Week6\16340023+闄堟槑浜?Ex6\ImageStitching-master\ImageStitching\CMakeFiles\CMakeTmp\CMakeFiles --progress-num=1 "Building C object CMakeFiles/cmTC_fb16c.dir/testCCompiler.c.obj", ...) failed.
+make (e=2): 系统找不到指定的文件。
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_fb16c.dir\build.make:64: CMakeFiles/cmTC_fb16c.dir/testCCompiler.c.obj] Error 2
+mingw32-make.exe[1]: Leaving directory 'E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:120: cmTC_fb16c/fast] Error 2
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp
+
+Run Build Command:"E:/mingw/MinGW/bin/mingw32-make.exe" "cmTC_1fcfa/fast"
+E:/mingw/MinGW/bin/mingw32-make.exe -f CMakeFiles\cmTC_1fcfa.dir\build.make CMakeFiles/cmTC_1fcfa.dir/build
+mingw32-make.exe[1]: Entering directory 'E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1fcfa.dir/testCCompiler.c.obj
+E:\mingw\MinGW\bin\gcc.exe    -o CMakeFiles\cmTC_1fcfa.dir\testCCompiler.c.obj   -c E:\Github\Computer_Vision\Week6\16340023+闄堟槑浜?Ex6\ImageStitching-master\ImageStitching\CMakeFiles\CMakeTmp\testCCompiler.c
+gcc.exe: error: E:\Github\Computer_Vision\Week6\16340023+闄堟槑浜?Ex6\ImageStitching-master\ImageStitching\CMakeFiles\CMakeTmp\testCCompiler.c: Invalid argument
+gcc.exe: fatal error: no input files
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_1fcfa.dir\build.make:65: CMakeFiles/cmTC_1fcfa.dir/testCCompiler.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:120: cmTC_1fcfa/fast] Error 2
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp
+
+Run Build Command:"E:/mingw/MinGW/bin/mingw32-make.exe" "cmTC_e7b6a/fast"
+E:/mingw/MinGW/bin/mingw32-make.exe -f CMakeFiles\cmTC_e7b6a.dir\build.make CMakeFiles/cmTC_e7b6a.dir/build
+mingw32-make.exe[1]: Entering directory 'E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e7b6a.dir/testCCompiler.c.obj
+E:\mingw\MinGW\bin\gcc.exe    -o CMakeFiles\cmTC_e7b6a.dir\testCCompiler.c.obj   -c E:\Github\Computer_Vision\Week6\16340023+闄堟槑浜?Ex6\ImageStitching-master\ImageStitching\CMakeFiles\CMakeTmp\testCCompiler.c
+gcc.exe: error: E:\Github\Computer_Vision\Week6\16340023+闄堟槑浜?Ex6\ImageStitching-master\ImageStitching\CMakeFiles\CMakeTmp\testCCompiler.c: Invalid argument
+gcc.exe: fatal error: no input files
+compilation terminated.
+mingw32-make.exe[1]: *** [CMakeFiles\cmTC_e7b6a.dir\build.make:65: CMakeFiles/cmTC_e7b6a.dir/testCCompiler.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'E:/Github/Computer_Vision/Week6/16340023+陈明亮+Ex6/ImageStitching-master/ImageStitching/CMakeFiles/CMakeTmp'
+mingw32-make.exe: *** [Makefile:120: cmTC_e7b6a/fast] Error 2
+
+
