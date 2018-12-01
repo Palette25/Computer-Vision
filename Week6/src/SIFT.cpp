@@ -92,11 +92,12 @@ map<vector<float>, VlSiftKeypoint> SIFT::getSiftFeatures(){
 	return features;
 }
 
-void SIFT:: drawSiftFeatires(float fac){
+void SIFT::drawSiftFeatires(float fac){
 	for(auto it=Features.begin(); it!=Features.end(); it++){
 		VlSiftKeypoint temp = it->second;
 		unsigned char red[3] = {255, 0, 0};
 		src.draw_circle(temp.x * fac, temp.y * fac, 1, red);
 	}
-	src.display("SIFT Features Image");
+	src.save("../0.bmp");
+	src.display("SIFT Image");
 }
